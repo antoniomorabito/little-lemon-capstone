@@ -1,25 +1,23 @@
-import React from 'react';
-import Navbar from './components/Navbar.jsx';
-import HeroSection from './components/HeroSection.jsx';
-import Specials from './components/Specials.jsx';
-import Testimonials from './components/Testimonials.jsx';
-import About from './components/About.jsx';
-import Footer from './components/Footer.jsx';
-import './styles/main.css'; 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Navbar from "./components/Navbar.jsx"
+import HomePage from "./components/HomePage.jsx" // Kita akan buat komponen ini
+import ReservationsPage from "./components/ReservationsPage.jsx"
+import Footer from "./components/Footer.jsx"
+import "./styles/main.css"
 
 function App() {
   return (
-    <>
+    <Router>
       <Navbar />
       <main>
-        <HeroSection />
-        <Specials />
-        <Testimonials />
-        <About />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/reservations" element={<ReservationsPage />} />
+        </Routes>
       </main>
       <Footer />
-    </>
-  );
+    </Router>
+  )
 }
 
-export default App;
+export default App

@@ -6,7 +6,6 @@
 }
 
 html {
-  /* Ditambahkan di sini */
   scroll-behavior: smooth;
 }
 
@@ -42,6 +41,7 @@ body {
   margin: 0 auto;
   padding-left: 1rem;
   padding-right: 1rem;
+  position: relative;
 }
 
 .navbar-logo {
@@ -49,7 +49,8 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  color: #333;
 }
 
 .navbar-logo img {
@@ -61,9 +62,10 @@ body {
   display: flex;
   gap: 1.5rem;
   list-style: none;
+  transition: all 0.3s ease;
 }
 
-.navbar-links a {
+.navbar-links li a {
   text-decoration: none;
   color: #333;
   font-weight: 500;
@@ -87,38 +89,6 @@ body {
 
 .cart-icon {
   font-size: 1.3rem;
-}
-.navbar {
-  position: relative;
-}
-
-.navbar-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.navbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  font-size: 1.3rem;
-  color: #333;
-}
-
-.navbar-links {
-  display: flex;
-  gap: 1.5rem;
-  list-style: none;
-  transition: all 0.3s ease;
-}
-
-.navbar-links li a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
 }
 
 .hamburger {
@@ -160,6 +130,23 @@ body {
   .navbar-actions.hide-mobile {
     display: none;
   }
+}
+
+/* Tambahkan gaya untuk tombol navigasi yang terlihat seperti link */
+.nav-button-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #333; /* Sesuaikan dengan warna link Anda */
+  font-weight: 500; /* Sesuaikan dengan font-weight link Anda */
+  cursor: pointer;
+  text-decoration: none; /* Hapus garis bawah default tombol */
+}
+
+.nav-button-link:hover {
+  text-decoration: underline; /* Tambahkan garis bawah saat hover, seperti link */
+  color: #000; /* Warna hover jika ada */
 }
 
 /* Hero wrapper */
@@ -358,6 +345,150 @@ body {
 @media (min-width: 768px) {
   .testimonial-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ======= RESERVATIONS PAGE ======= */
+.reservations-page {
+  padding: 2rem 1rem; /* Padding atas bawah lebih besar */
+  background-color: #f9f9f9; /* Latar belakang sedikit berbeda untuk membedakan halaman */
+}
+
+.reservations-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.reservations-header h1 {
+  font-size: 2.8rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.reservations-header p {
+  font-size: 1.1rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.reservations-content {
+  display: grid;
+  grid-template-columns: 1fr; /* Default 1 kolom untuk mobile */
+  gap: 2rem;
+  align-items: flex-start; /* Align items to the top */
+}
+
+.reservation-form-container {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.reservation-form .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.reservation-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #495e57; /* Warna hijau Little Lemon */
+}
+
+.reservation-form input[type="date"],
+.reservation-form input[type="number"],
+.reservation-form input[type="text"],
+.reservation-form input[type="tel"],
+.reservation-form input[type="email"],
+.reservation-form select,
+.reservation-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.reservation-form input:focus,
+.reservation-form select:focus,
+.reservation-form textarea:focus {
+  outline: none;
+  border-color: #f4ce14; /* Warna kuning Little Lemon saat focus */
+  box-shadow: 0 0 0 2px rgba(244, 206, 20, 0.3);
+}
+
+.reservation-form .form-button {
+  background-color: #495e57; /* Hijau */
+  color: white;
+  padding: 0.8rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.05rem;
+  transition: background-color 0.2s ease;
+  width: 100%; /* Tombol full width */
+}
+
+.reservation-form .form-button:hover {
+  background-color: #3b4c45; /* Hijau lebih gelap */
+}
+
+.reservation-visual {
+  text-align: center;
+  padding-top: 1rem; /* Beri jarak jika di bawah form pada mobile */
+}
+
+.reservation-illustration {
+  max-width: 300px; /* Sesuaikan ukuran SVG */
+  width: 100%;
+  height: auto;
+  margin: 0 auto 1rem auto;
+  display: block;
+}
+
+.visual-caption {
+  font-style: italic;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.reservation-confirmation {
+  background-color: #edefee;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #495e57;
+}
+.reservation-confirmation h2 {
+  color: #495e57;
+  margin-bottom: 1rem;
+}
+.reservation-confirmation p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+.reservation-confirmation .form-button {
+  background-color: #f4ce14;
+  color: #333;
+  margin-top: 1rem;
+}
+.reservation-confirmation .form-button:hover {
+  background-color: #e5c200;
+}
+
+/* Responsive untuk halaman reservasi */
+@media (min-width: 992px) {
+  /* Desktop */
+  .reservations-content {
+    grid-template-columns: 2fr 1fr; /* Form lebih lebar dari visual */
+    gap: 3rem;
+  }
+  .reservation-visual {
+    padding-top: 0; /* Reset padding atas */
   }
 }
 
