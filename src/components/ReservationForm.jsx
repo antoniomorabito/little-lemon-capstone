@@ -1,11 +1,19 @@
-"use client"
-
 import { useState, useEffect } from "react"
 
-function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate }) {
+// Helper function to get today's date in YYYY-MM-DD format
+// This can be moved to a utils file if used elsewhere
+const getTodayString = () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, "0")
+  const day = String(today.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+function ReservationForm({ availableTimes = [], onDateChange, submitForm, initialDate }) {
   const [formData, setFormData] = useState({
-    date: initialDate || "",
-    time: availableTimes && availableTimes.length > 0 ? availableTimes[0] : "17:00",
+    date: initialDate || getTodayString(),
+    time: availableTimes.length > 0 ? availableTimes[0] : "",
     guests: 1,
     occasion: "None",
     name: "",
@@ -19,39 +27,49 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
 
   // Update form date if initialDate prop changes
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, date: initialDate }))
+    setFormData((prev) => ({ ...prev, date: initialDate || getTodayString() }))
   }, [initialDate])
 
   // Update default time when availableTimes or date changes
   useEffect(() => {
-    if (availableTimes && availableTimes.length > 0) {
-      // Cek apakah waktu saat ini masih ada di availableTimes baru
+    if (availableTimes.length > 0) {
       const currentTimeIsValid = availableTimes.includes(formData.time)
       setFormData((prev) => ({
         ...prev,
         time: currentTimeIsValid ? prev.time : availableTimes[0],
       }))
     } else if (formData.date) {
-      // Jika ada tanggal tapi tidak ada waktu tersedia
-      setFormData((prev) => ({ ...prev, time: "" })) // Kosongkan pilihan waktu
+      setFormData((prev) => ({ ...prev, time: "" }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableTimes, formData.date]) // formData.time sengaja tidak dimasukkan agar tidak loop
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let processedValue = value
+    if (name === "guests") {
+      processedValue = Number.parseInt(value, 10)
+      if (isNaN(processedValue)) processedValue = "" // Handle non-numeric input for guests temporarily
+    }
+
     setFormData((prevState) => ({
       ...prevState,
-      [name]: name === "guests" ? Number.parseInt(value, 10) : value,
+      [name]: processedValue,
     }))
 
-    if (name === "date") {
-      onDateChange(value) // Panggil callback saat tanggal berubah
+    if (name === "date" && typeof onDateChange === "function") {
+      onDateChange(value)
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmissionError(null) // Reset error
+    // Double check validity before submitting, though button should be disabled
+    if (!isFormValid) {
+      setSubmissionError("Please correct the errors in the form.")
+      return
+    }
+    setSubmissionError(null)
     const success = await submitForm(formData)
     if (success) {
       setIsSubmitted(true)
@@ -63,14 +81,10 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
   const handleMakeAnotherReservation = () => {
     setIsSubmitted(false)
     setSubmissionError(null)
-    const today = new Date()
-    const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-      today.getDate(),
-    ).padStart(2, "0")}`
-
+    const today = getTodayString()
     setFormData({
-      date: initialDate, // Gunakan initialDate dari props (yang diupdate oleh ReservationsPage)
-      time: availableTimes && availableTimes.length > 0 ? availableTimes[0] : "17:00",
+      date: initialDate || today,
+      time: availableTimes.length > 0 ? availableTimes[0] : "",
       guests: 1,
       occasion: "None",
       name: "",
@@ -78,12 +92,22 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
       email: "",
       requests: "",
     })
-    // Trigger pengambilan ulang waktu untuk tanggal awal jika perlu
-    // onDateChange(initialDate); // Ini mungkin tidak perlu jika initialDate sudah benar
+    if (typeof onDateChange === "function") {
+      onDateChange(initialDate || today)
+    }
   }
 
-  // Validasi sederhana untuk tombol submit
-  const isFormValid = formData.date && formData.time && formData.name && formData.phone && formData.guests >= 1
+  // Client-side validation logic for disabling the submit button
+  const isFormValid =
+    formData.date &&
+    new Date(formData.date) >= new Date(getTodayString()) && // Date is today or in the future
+    formData.time &&
+    availableTimes.includes(formData.time) && // A valid time from availableTimes is selected
+    formData.guests >= 1 &&
+    formData.guests <= 10 &&
+    formData.name.trim().length >= 2 &&
+    formData.phone.trim().length >= 7 && // Basic phone length, pattern handles more
+    (formData.email.trim().length > 0 ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim()) : true) // Valid email if provided
 
   if (isSubmitted) {
     return (
@@ -102,7 +126,8 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
   }
 
   return (
-    <form onSubmit={handleSubmit} className="reservation-form" noValidate>
+    // Removed noValidate to allow HTML5 default validation messages
+    <form onSubmit={handleSubmit} className="reservation-form">
       <div className="form-group">
         <label htmlFor="res-date">Choose date*</label>
         <input
@@ -113,6 +138,7 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
           onChange={handleChange}
           required
           aria-required="true"
+          min={getTodayString()} // HTML5: Date cannot be in the past
         />
       </div>
 
@@ -127,7 +153,7 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
           aria-required="true"
           disabled={!formData.date || availableTimes.length === 0}
         >
-          {availableTimes && availableTimes.length > 0 ? (
+          {availableTimes.length > 0 ? (
             availableTimes.map((time) => (
               <option key={time} value={time}>
                 {time}
@@ -146,8 +172,8 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
         <input
           type="number"
           placeholder="1"
-          min="1"
-          max="10"
+          min="1" // HTML5: Minimum 1 guest
+          max="10" // HTML5: Maximum 10 guests
           id="guests"
           name="guests"
           value={formData.guests}
@@ -178,7 +204,7 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
           onChange={handleChange}
           required
           aria-required="true"
-          minLength="2"
+          minLength="2" // HTML5: Minimum 2 characters
         />
       </div>
 
@@ -193,14 +219,15 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
           onChange={handleChange}
           required
           aria-required="true"
-          pattern="[0-9]{3}-?[0-9]{3}-?[0-9]{4}"
+          pattern="^\+?([0-9]{1,3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4,7})$" // More flexible phone pattern
+          title="Phone number (e.g., +1-123-4567890 or 123-456-7890)"
         />
       </div>
 
       <div className="form-group">
         <label htmlFor="email">Email (Optional)</label>
         <input
-          type="email"
+          type="email" // HTML5: Validates email format if a value is entered
           id="email"
           name="email"
           placeholder="your@email.com"
@@ -218,6 +245,7 @@ function ReservationForm({ availableTimes, onDateChange, submitForm, initialDate
           placeholder="e.g., dietary restrictions, high chair"
           value={formData.requests}
           onChange={handleChange}
+          maxLength="200" // HTML5: Optional max length
         ></textarea>
       </div>
 

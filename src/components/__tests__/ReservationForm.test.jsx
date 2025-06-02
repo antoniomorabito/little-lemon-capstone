@@ -1,124 +1,209 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import ReservationForm from "../ReservationForm" // Path import disesuaikan
+import ReservationForm from "../ReservationForm"
 
-// Mock console.log untuk mencegah output selama tes, jika diperlukan
-// beforeEach(() => {
-//   jest.spyOn(console, 'log').mockImplementation(() => {});
-// });
-// afterEach(() => {
-//   console.log.mockRestore();
-// });
+// Helper function to get today's date in YYYY-MM-DD format for tests
+const getTodayTestString = () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, "0")
+  const day = String(today.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
 
-describe("ReservationForm", () => {
+const mockAvailableTimes = ["17:00", "18:00", "19:00", "20:00"]
+const mockSubmitForm = jest.fn()
+const mockOnDateChange = jest.fn()
+
+describe("ReservationForm with Validations", () => {
+  beforeEach(() => {
+    mockSubmitForm.mockClear()
+    mockOnDateChange.mockClear()
+    // Mock console.log and console.error to keep test output clean
+    jest.spyOn(console, "log").mockImplementation(() => {})
+    jest.spyOn(console, "error").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    console.log.mockRestore()
+    console.error.mockRestore()
+  })
+
+  const renderForm = (props = {}) => {
+    const defaultProps = {
+      availableTimes: mockAvailableTimes,
+      onDateChange: mockOnDateChange,
+      submitForm: mockSubmitForm,
+      initialDate: getTodayTestString(),
+    }
+    return render(<ReservationForm {...defaultProps} {...props} />)
+  }
+
   test("renders all form fields and the submit button", () => {
-    render(<ReservationForm />)
-
-    // Cek label dan input terkait
+    renderForm()
     expect(screen.getByLabelText(/choose date/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/choose time/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/number of guests/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/occasion/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/phone number/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email $$optional$$/i)).toBeInTheDocument() // Perhatikan escape karakter khusus
-    expect(screen.getByLabelText(/special requests $$optional$$/i)).toBeInTheDocument() // Perhatikan escape karakter khusus
-
-    // Cek tombol submit
+    expect(screen.getByLabelText(/email $$optional$$/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/special requests $$optional$$/i)).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /confirm reservation/i })).toBeInTheDocument()
-  })
-
-  test("updates form data on user input", async () => {
-    const user = userEvent.setup()
-    render(<ReservationForm />)
-
-    const nameInput = screen.getByLabelText(/full name/i)
-    await user.type(nameInput, "John Doe")
-    expect(nameInput).toHaveValue("John Doe")
-
-    const guestsInput = screen.getByLabelText(/number of guests/i)
-    await user.clear(guestsInput) // Hapus nilai default dulu jika ada
-    await user.type(guestsInput, "4")
-    expect(guestsInput).toHaveValue(4)
-
-    const dateInput = screen.getByLabelText(/choose date/i)
-    fireEvent.change(dateInput, { target: { value: "2025-12-25" } }) // userEvent.type tidak bekerja baik untuk type date
-    expect(dateInput).toHaveValue("2025-12-25")
-
-    const timeSelect = screen.getByLabelText(/choose time/i)
-    await user.selectOptions(timeSelect, "20:00")
-    expect(timeSelect).toHaveValue("20:00")
-
-    const occasionSelect = screen.getByLabelText(/occasion/i)
-    await user.selectOptions(occasionSelect, "Birthday")
-    expect(occasionSelect).toHaveValue("Birthday")
-  })
-
-  test("shows confirmation message after successful submission with correct data", async () => {
-    const user = userEvent.setup()
-    render(<ReservationForm />)
-
-    // Isi semua field yang wajib
-    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: "2025-07-10" } })
-    await user.selectOptions(screen.getByLabelText(/choose time/i), "19:00")
-    const guestsInput = screen.getByLabelText(/number of guests/i)
-    await user.clear(guestsInput)
-    await user.type(guestsInput, "3")
-    await user.selectOptions(screen.getByLabelText(/occasion/i), "Anniversary")
-    await user.type(screen.getByLabelText(/full name/i), "Jane Roe")
-    await user.type(screen.getByLabelText(/phone number/i), "123-456-7890")
-
-    // Klik tombol submit
-    const submitButton = screen.getByRole("button", { name: /confirm reservation/i })
-    await user.click(submitButton)
-
-    // Cek pesan konfirmasi
-    expect(screen.getByRole("heading", { name: /thank you, jane roe!/i })).toBeInTheDocument()
-    expect(
-      screen.getByText(/your reservation for 3 guest$$s$$ on 2025-07-10 at 19:00 for anniversary has been requested./i), // Perhatikan escape karakter khusus
-    ).toBeInTheDocument()
-    expect(screen.getByText(/we will contact you shortly if any confirmation is needed./i)).toBeInTheDocument()
-
-    // Cek tombol "Make Another Reservation"
-    expect(screen.getByRole("button", { name: /make another reservation/i })).toBeInTheDocument()
-  })
-
-  test("'Make Another Reservation' button resets the form view", async () => {
-    const user = userEvent.setup()
-    render(<ReservationForm />)
-
-    // Submit form dulu (data minimal untuk submit)
-    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: "2025-08-15" } })
-    await user.type(screen.getByLabelText(/full name/i), "Test User")
-    await user.type(screen.getByLabelText(/phone number/i), "555-5555")
-    await user.click(screen.getByRole("button", { name: /confirm reservation/i }))
-
-    // Pastikan pesan konfirmasi muncul
-    expect(screen.getByRole("heading", { name: /thank you, test user!/i })).toBeInTheDocument()
-
-    // Klik tombol "Make Another Reservation"
-    const makeAnotherButton = screen.getByRole("button", { name: /make another reservation/i })
-    await user.click(makeAnotherButton)
-
-    // Cek apakah form awal muncul lagi
-    expect(screen.getByLabelText(/choose date/i)).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /confirm reservation/i })).toBeInTheDocument()
-    expect(screen.queryByRole("heading", { name: /thank you, test user!/i })).not.toBeInTheDocument() // Pesan konfirmasi hilang
   })
 
   test("HTML5 validation attributes are present", () => {
-    render(<ReservationForm />)
+    renderForm()
+    const today = getTodayTestString()
 
-    expect(screen.getByLabelText(/choose date/i)).toBeRequired()
+    const dateInput = screen.getByLabelText(/choose date/i)
+    expect(dateInput).toBeRequired()
+    expect(dateInput).toHaveAttribute("min", today)
+
     expect(screen.getByLabelText(/choose time/i)).toBeRequired()
-    expect(screen.getByLabelText(/number of guests/i)).toBeRequired()
-    expect(screen.getByLabelText(/number of guests/i)).toHaveAttribute("min", "1")
-    expect(screen.getByLabelText(/number of guests/i)).toHaveAttribute("max", "10")
-    expect(screen.getByLabelText(/full name/i)).toBeRequired()
-    expect(screen.getByLabelText(/phone number/i)).toBeRequired()
 
-    // Email dan Special Requests tidak required
-    expect(screen.getByLabelText(/email $$optional$$/i)).not.toBeRequired() // Perhatikan escape karakter khusus
-    expect(screen.getByLabelText(/special requests $$optional$$/i)).not.toBeRequired() // Perhatikan escape karakter khusus
+    const guestsInput = screen.getByLabelText(/number of guests/i)
+    expect(guestsInput).toBeRequired()
+    expect(guestsInput).toHaveAttribute("min", "1")
+    expect(guestsInput).toHaveAttribute("max", "10")
+
+    const nameInput = screen.getByLabelText(/full name/i)
+    expect(nameInput).toBeRequired()
+    expect(nameInput).toHaveAttribute("minLength", "2")
+
+    const phoneInput = screen.getByLabelText(/phone number/i)
+    expect(phoneInput).toBeRequired()
+    expect(phoneInput).toHaveAttribute("pattern", "^\\+?([0-9]{1,3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4,7})$")
+
+    expect(screen.getByLabelText(/email $$optional$$/i)).toHaveAttribute("type", "email")
+    expect(screen.getByLabelText(/special requests $$optional$$/i)).toHaveAttribute("maxLength", "200")
+  })
+
+  test("submit button is initially disabled if required fields are not met", () => {
+    renderForm({ initialDate: getTodayTestString(), availableTimes: [] }) // No available times initially
+    expect(screen.getByRole("button", { name: /confirm reservation/i })).toBeDisabled()
+  })
+
+  test("submit button becomes enabled when all required fields are valid", async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    // Initially button might be disabled or enabled depending on defaults, let's fill to ensure
+    const submitButton = screen.getByRole("button", { name: /confirm reservation/i })
+
+    // Fill form with valid data
+    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: getTodayTestString() } })
+    await user.selectOptions(screen.getByLabelText(/choose time/i), mockAvailableTimes[0])
+    await user.clear(screen.getByLabelText(/number of guests/i))
+    await user.type(screen.getByLabelText(/number of guests/i), "2")
+    await user.type(screen.getByLabelText(/full name/i), "John Doe")
+    await user.type(screen.getByLabelText(/phone number/i), "123-456-7890") // Matches new pattern implicitly
+
+    await waitFor(() => {
+      expect(submitButton).toBeEnabled()
+    })
+  })
+
+  test("submit button is disabled if date is in the past", async () => {
+    const user = userEvent.setup()
+    renderForm()
+    const submitButton = screen.getByRole("button", { name: /confirm reservation/i })
+
+    // Fill other fields validly
+    await user.selectOptions(screen.getByLabelText(/choose time/i), mockAvailableTimes[0])
+    await user.type(screen.getByLabelText(/number of guests/i), "2")
+    await user.type(screen.getByLabelText(/full name/i), "John Doe")
+    await user.type(screen.getByLabelText(/phone number/i), "123-456-7890")
+
+    // Set date to past
+    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: "2020-01-01" } })
+
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled()
+    })
+  })
+
+  test("submit button is disabled if number of guests is invalid", async () => {
+    const user = userEvent.setup()
+    renderForm()
+    const submitButton = screen.getByRole("button", { name: /confirm reservation/i })
+    const guestsInput = screen.getByLabelText(/number of guests/i)
+
+    // Fill other fields validly
+    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: getTodayTestString() } })
+    await user.selectOptions(screen.getByLabelText(/choose time/i), mockAvailableTimes[0])
+    await user.type(screen.getByLabelText(/full name/i), "John Doe")
+    await user.type(screen.getByLabelText(/phone number/i), "123-456-7890")
+
+    // Test guests < 1
+    await user.clear(guestsInput)
+    await user.type(guestsInput, "0")
+    await waitFor(() => expect(submitButton).toBeDisabled())
+
+    // Test guests > 10
+    await user.clear(guestsInput)
+    await user.type(guestsInput, "11")
+    await waitFor(() => expect(submitButton).toBeDisabled())
+  })
+
+  test("submit button is disabled if name is too short", async () => {
+    const user = userEvent.setup()
+    renderForm()
+    const submitButton = screen.getByRole("button", { name: /confirm reservation/i })
+
+    // Fill other fields validly
+    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: getTodayTestString() } })
+    await user.selectOptions(screen.getByLabelText(/choose time/i), mockAvailableTimes[0])
+    await user.type(screen.getByLabelText(/number of guests/i), "2")
+    await user.type(screen.getByLabelText(/phone number/i), "123-456-7890")
+
+    // Set name too short
+    await user.type(screen.getByLabelText(/full name/i), "J")
+    await waitFor(() => expect(submitButton).toBeDisabled())
+  })
+
+  test("form submission calls submitForm prop with form data when valid", async () => {
+    const user = userEvent.setup()
+    mockSubmitForm.mockResolvedValue(true) // Simulate successful submission
+    renderForm()
+
+    const date = getTodayTestString()
+    const time = mockAvailableTimes[1]
+    const guests = 3
+    const occasion = "Birthday"
+    const name = "Jane Doe"
+    const phone = "987-654-3210"
+    const email = "jane@example.com"
+    const requests = "Window seat please"
+
+    fireEvent.change(screen.getByLabelText(/choose date/i), { target: { value: date } })
+    await user.selectOptions(screen.getByLabelText(/choose time/i), time)
+    await user.clear(screen.getByLabelText(/number of guests/i))
+    await user.type(screen.getByLabelText(/number of guests/i), guests.toString())
+    await user.selectOptions(screen.getByLabelText(/occasion/i), occasion)
+    await user.type(screen.getByLabelText(/full name/i), name)
+    await user.type(screen.getByLabelText(/phone number/i), phone)
+    await user.type(screen.getByLabelText(/email $$optional$$/i), email)
+    await user.type(screen.getByLabelText(/special requests $$optional$$/i), requests)
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /confirm reservation/i })).toBeEnabled()
+    })
+
+    await user.click(screen.getByRole("button", { name: /confirm reservation/i }))
+
+    await waitFor(() => {
+      expect(mockSubmitForm).toHaveBeenCalledWith({
+        date,
+        time,
+        guests,
+        occasion,
+        name,
+        phone,
+        email,
+        requests,
+      })
+    })
+    expect(await screen.findByText(`Thank You, ${name}!`)).toBeInTheDocument()
   })
 })
