@@ -31,12 +31,17 @@ function Navbar() {
 
   const handleScrollToSection = (sectionId) => {
     closeMenu()
-    navigate("/") // Navigasi ke homepage dulu
-    setTimeout(() => {
-      // Beri sedikit waktu agar homepage render
-      const element = document.getElementById(sectionId.substring(1)) // Hapus '#' dari id
-      element?.scrollIntoView({ behavior: "smooth" })
-    }, 100) // Penundaan bisa disesuaikan
+    // Hapus '#' dari sectionId untuk digunakan sebagai state
+    const targetId = sectionId.startsWith("#") ? sectionId.substring(1) : sectionId
+
+    // Jika sudah di homepage, scroll langsung
+    if (window.location.pathname === "/") {
+      const element = document.getElementById(targetId)
+      element?.scrollIntoView({ behavior: "smooth", block: "start" })
+    } else {
+      // Jika di halaman lain, navigasi ke homepage dengan state
+      navigate("/", { state: { scrollTo: targetId } })
+    }
   }
 
   return (
@@ -67,12 +72,12 @@ function Navbar() {
             </Link>
           </li>
           <li>
-            <button onClick={() => handleScrollToSection("#about")} className="nav-button-link">
+            <button onClick={() => handleScrollToSection("about")} className="nav-button-link">
               About
             </button>
           </li>
           <li>
-            <button onClick={() => handleScrollToSection("#menu")} className="nav-button-link">
+            <button onClick={() => handleScrollToSection("menu")} className="nav-button-link">
               Menu
             </button>
           </li>
@@ -84,8 +89,11 @@ function Navbar() {
         </ul>
 
         <div className={`navbar-actions ${menuOpen ? "hide-mobile" : ""}`}>
-          <button className="order-button">Order online</button>
-          <span className="cart-icon">🛒</span>
+          {/* Mengubah button menjadi Link untuk Order Online */}
+          <Link to="/order-online" className="order-button" onClick={closeMenu}>
+            Order online
+          </Link>
+          <span className="cart-icon">🛒</span> {/* Nanti bisa jadi Link ke halaman Cart */}
         </div>
       </nav>
     </header>

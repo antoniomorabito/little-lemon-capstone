@@ -1,3 +1,7 @@
+"use client" // Tambahkan ini jika belum ada, untuk penggunaan hook react-router-dom
+
+import { Link } from "react-router-dom" // Import Link
+
 const HeroSVG = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -19,8 +23,6 @@ const HeroSVG = () => (
 function HeroSection() {
   return (
     <section id="home" className="hero">
-      {" "}
-      {/* Ditambahkan id="home" */}
       <div className="container hero-inner">
         <div className="hero-text">
           <h1>Little Lemon</h1>
@@ -28,7 +30,10 @@ function HeroSection() {
           <p>
             We are a family owned Mediterranean restaurant, focused on traditional recipes served with a modern twist.
           </p>
-          <button>Reserve a table</button>
+          {/* Mengubah button menjadi Link */}
+          <Link to="/reservations" className="hero-button">
+            Reserve a table
+          </Link>
         </div>
         <div className="hero-image">
           <HeroSVG />
