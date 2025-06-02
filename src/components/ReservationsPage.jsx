@@ -1,9 +1,8 @@
-/* global fetchAPI, submitAPI */ // <-- TAMBAHAN PENTING UNTUK ESLINT
+/* global fetchAPI, submitAPI */ // <-- INI TETAP PENTING DAN SUDAH BENAR
 "use client" // Hapus jika tidak menggunakan Next.js App Router
 
 import React, { useReducer, useEffect } from "react"
 import ReservationForm from "./ReservationForm"
-// import { fetchAPI, submitAPI } from "./api" // Import fetchAPI dan submitAPI
 
 // Contoh SVG sederhana untuk dekorasi halaman reservasi
 const DiningIllustrationSVG = () => (
@@ -42,13 +41,16 @@ export const updateTimes = (state, action) => {
 
 // Fungsi untuk inisialisasi times (dipanggil sekali)
 export const initializeTimes = async (dispatch) => {
+  console.log("Attempting to initializeTimes...")
   try {
     const today = new Date()
-    const times = await window.fetchAPI(today) // Menggunakan window untuk mengakses variabel global
+    // Panggil fetchAPI langsung, tanpa window.
+    const times = await window.fetchAPI(today) // Ini baris yang mungkin error jika fetchAPI undefined
+    console.log("Fetched times:", times)
     dispatch({ type: "SET_TIMES", payload: times })
   } catch (error) {
-    console.error("Failed to initialize times:", error)
-    dispatch({ type: "SET_TIMES", payload: [] }) // Set ke array kosong jika error
+    console.error("Error in initializeTimes:", error)
+    dispatch({ type: "SET_TIMES", payload: [] })
   }
 }
 
@@ -56,31 +58,43 @@ function ReservationsPage() {
   const [availableTimes, dispatchTimes] = useReducer(updateTimes, [])
   const [currentDate, setCurrentDate] = React.useState(getTodayDate())
 
+  console.log("ReservationsPage component rendered/re-rendered.")
+
   useEffect(() => {
+    console.log("ReservationsPage useEffect triggered.")
+    console.log("Type of fetchAPI in useEffect:", typeof window.fetchAPI)
     if (typeof window.fetchAPI === "function") {
-      // Menggunakan window untuk mengakses variabel global
+      console.log("fetchAPI is a function, calling initializeTimes.")
       initializeTimes(dispatchTimes)
     } else {
-      console.error("fetchAPI function is not available globally.")
+      // Ini adalah log yang Anda lihat:
+      console.error("fetchAPI function is not available globally. (from useEffect)")
       dispatchTimes({ type: "SET_TIMES", payload: [] })
     }
-  }, []) // Jalankan sekali saat komponen mount
+  }, []) // Dependensi kosong, hanya jalan sekali saat mount
 
   const handleDateChange = async (selectedDateString) => {
+    // ... (logika handleDateChange dengan pemanggilan fetchAPI) ...
     setCurrentDate(selectedDateString)
+    console.log(`handleDateChange called with: ${selectedDateString}`)
+    console.log("Type of fetchAPI in handleDateChange:", typeof window.fetchAPI)
     try {
       const selectedDateObject = new Date(selectedDateString)
-      const times = await window.fetchAPI(selectedDateObject) // Menggunakan window untuk mengakses variabel global
+      const times = await window.fetchAPI(selectedDateObject)
+      console.log("Fetched times for new date:", times)
       dispatchTimes({ type: "SET_TIMES", payload: times })
     } catch (error) {
-      console.error("Failed to fetch times for selected date:", error)
+      console.error("Error in handleDateChange fetching times:", error)
       dispatchTimes({ type: "SET_TIMES", payload: [] })
     }
   }
 
   const submitForm = async (formData) => {
+    // ... (logika submitForm dengan pemanggilan submitAPI) ...
+    console.log("submitForm called with:", formData)
+    console.log("Type of submitAPI in submitForm:", typeof window.submitAPI)
     try {
-      const success = await window.submitAPI(formData) // Menggunakan window untuk mengakses variabel global
+      const success = await window.submitAPI(formData)
       if (success) {
         console.log("Booking successful:", formData)
         return true

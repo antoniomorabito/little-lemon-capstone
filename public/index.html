@@ -42,7 +42,16 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="https://raw.githubusercontent.com/courseraap/capstone/main/api.js"></script>
+    <script>
+      console.log("INDEX.HTML: Script BEFORE api.js");
+    </script>
+    <!-- <script src="https://raw.githubusercontent.com/courseraap/capstone/main/api.js"></script> -->
+    <script src="%PUBLIC_URL%/api.js"></script>
+    <script>
+      console.log("INDEX.HTML: Script AFTER api.js");
+      console.log("Type of fetchAPI in index.html AFTER script:", typeof fetchAPI);
+      console.log("Type of submitAPI in index.html AFTER script:", typeof submitAPI);
+    </script>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
