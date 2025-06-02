@@ -5,7 +5,7 @@
   box-sizing: border-box;
 }
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   line-height: 1.6;
   background: #fff;
   color: #333;
@@ -16,9 +16,17 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
+  /* display: grid; */ /* Removed grid from general container to avoid conflicts */
+  /* grid-template-columns: repeat(12, 1fr); */
+  /* gap: 1rem; */
+}
+
+/* Specific container usage for grid if needed */
+.grid-container {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1rem;
+  width: 100%; /* Ensure it takes full width of its parent */
 }
 
 /* ======= NAVBAR ======= */
@@ -27,6 +35,11 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 0;
+  /* The navbar itself can be part of a .container or manage its own padding */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .navbar-logo {
@@ -154,7 +167,7 @@ body {
     transform: translateY(-200%);
     opacity: 0;
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     z-index: 999;
   }
 
@@ -175,15 +188,23 @@ body {
 
 /* Hero wrapper */
 .hero {
-  background: #495E57;
+  background: #495e57;
   padding: 3rem 0;
   color: white;
 }
 
 /* New wrapper for internal hero content */
+/* Ensure .hero-inner uses the grid-container if it needs a 12-column layout */
 .hero-inner {
+  /* display: grid; */ /* This will be handled by grid-container if applied */
+  /* grid-template-columns: 1fr; */
+  gap: 2rem;
+  text-align: center;
+}
+.hero .container {
+  /* Target container specifically within hero */
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr; /* Mobile default */
   gap: 2rem;
   text-align: center;
 }
@@ -191,7 +212,7 @@ body {
 .hero-text h1 {
   font-size: 3rem;
   font-weight: 700;
-  color: #F4CE14;
+  color: #f4ce14;
 }
 
 .hero-text h2 {
@@ -211,8 +232,8 @@ body {
 .hero-text button {
   margin-top: 1.5rem;
   padding: 0.75rem 1.5rem;
-  background: #F4CE14;
-  color: #495E57;
+  background: #f4ce14;
+  color: #495e57;
   font-weight: bold;
   border: none;
   border-radius: 8px;
@@ -227,26 +248,34 @@ body {
 }
 
 .hero-image svg {
+  /* If you use SVG here */
   width: 100%;
   height: auto;
   border-radius: 12px;
 }
+.hero-image img {
+  /* If you use IMG here */
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+}
 
-/* Desktop alignment */
+/* Desktop alignment for Hero */
 @media (min-width: 768px) {
-  .hero-inner {
-    grid-template-columns: repeat(12, 1fr);
+  .hero .container {
+    grid-template-columns: repeat(12, 1fr); /* Use 12-column grid */
     align-items: center;
     text-align: left;
   }
 
   .hero-text {
-    grid-column: span 6;
+    grid-column: span 6; /* Span 6 of 12 columns */
   }
 
   .hero-image {
-    grid-column: span 6;
-    margin: 0;
+    grid-column: span 6; /* Span 6 of 12 columns */
+    margin: 0; /* Reset margin if needed */
   }
 
   .hero-text p,
@@ -255,47 +284,143 @@ body {
   }
 }
 
-
-/* ======= SPECIALS ======= */
+/* === SPECIALS === */
 .specials {
-  padding: 2rem 1rem;
+  padding: 4rem 0; /* Padding for the section */
+  background: #fff;
 }
-.specials-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+.specials .container {
+  /* This container will manage padding and max-width */
+  /* No grid display here, children will manage their own layout */
 }
-.special-card {
-  background: #edefee;
-  padding: 1rem;
-  border-radius: 10px;
-}
-.special-card img {
-  width: 100%;
-  border-radius: 8px;
-}
-.special-card h3 {
-  margin-top: 0.5rem;
+
+.specials-header-row {
   display: flex;
   justify-content: space-between;
-}
-.special-card a {
-  margin-top: 0.5rem;
-  display: inline-block;
-  color: #495e57;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
-/* Specials 3-column layout on desktop */
-@media (min-width: 768px) {
+.specials-header-row h2 {
+  font-size: 1.8rem; /* As per screenshot, "This Weeks Specials" is quite large */
+  font-weight: bold;
+  color: #333;
+}
+
+.menu-button {
+  background: #f4ce14;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px; /* Rounded corners like screenshot */
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+  color: #333;
+}
+.menu-button:hover {
+  background: #e5c200;
+}
+
+.specials-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr; /* Default: 1 column for mobile */
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 600px) {
+  .specials-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns (as per screenshot) */
+@media (min-width: 992px) {
+  /* Adjusted breakpoint for 3 columns */
   .specials-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+.special-card {
+  background: #edefee;
+  border-radius: 12px; /* Rounded corners for the card */
+  overflow: hidden; /* Important for image border-radius to be visible */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.special-card:hover {
+  transform: translateY(-5px);
+}
+
+.special-card-image {
+  width: 100%;
+  height: 180px; /* Fixed height for image container */
+  overflow: hidden; /* Ensure image fits */
+}
+
+.special-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cover the area, cropping if necessary */
+  display: block; /* Remove extra space below image */
+}
+
+.special-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1; /* Allow content to grow and push link to bottom */
+}
+
+.special-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.special-title-row h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.special-title-row .price {
+  color: #ee9972;
+  font-weight: bold;
+}
+
+.special-card p {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.4;
+  flex-grow: 1; /* Allow description to take available space */
+}
+
+.special-card a {
+  font-weight: 600;
+  color: #495e57;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-top: auto; /* Push link to the bottom of the card content */
+}
+
+.special-card a:hover {
+  text-decoration: underline;
 }
 
 /* ======= TESTIMONIALS ======= */
 .testimonials {
   background: #fbdabb;
   padding: 2rem 1rem;
+}
+.testimonials .container {
+  /* Testimonials specific container styling if needed */
 }
 .testimonial-grid {
   display: grid;
@@ -306,7 +431,7 @@ body {
   background: white;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 @media (min-width: 768px) {
   .testimonial-grid {
@@ -318,6 +443,9 @@ body {
 .about {
   padding: 2rem 1rem;
 }
+.about .container {
+  /* About specific container styling if needed */
+}
 .about-content {
   display: grid;
   grid-template-columns: 1fr;
@@ -326,10 +454,21 @@ body {
 .about-images img {
   width: 100%;
   border-radius: 10px;
+  margin-bottom: 1rem; /* Add some space between images if stacked */
 }
 @media (min-width: 768px) {
-  .about-content {
+  .about .container .about-content {
+    /* More specific selector */
     grid-template-columns: repeat(2, 1fr);
+    align-items: center; /* Vertically align text and images */
+  }
+  .about-images {
+    display: flex; /* Arrange images side-by-side or manage layout */
+    gap: 1rem;
+  }
+  .about-images img {
+    flex: 1; /* Distribute space if multiple images */
+    max-width: 50%; /* Example if two images */
   }
 }
 
@@ -337,11 +476,21 @@ body {
 footer {
   background: #495e57;
   color: white;
-  padding: 2rem 1rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+footer .container {
   display: grid;
   grid-template-columns: 1fr;
   text-align: center;
+  gap: 1.5rem; /* Add gap between footer sections on mobile */
 }
+
+.footer-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
 .footer-nav ul {
   list-style: none;
   padding: 0;
@@ -349,13 +498,39 @@ footer {
 .footer-nav li {
   margin: 0.5rem 0;
 }
+.footer-nav a {
+  color: white;
+  text-decoration: none;
+}
+.footer-nav a:hover {
+  text-decoration: underline;
+}
+
+.footer-contact p,
+.footer-social p {
+  /* Assuming social links might be in a p tag or just links */
+  margin: 0.3rem 0;
+}
+.footer-social a {
+  color: white;
+  text-decoration: none;
+  margin: 0 0.5rem;
+}
+.footer-social a:hover {
+  text-decoration: underline;
+}
+
 .footer-contact,
 .footer-social {
   margin-top: 1rem;
 }
 @media (min-width: 768px) {
-  footer {
-    grid-template-columns: repeat(3, 1fr);
+  footer .container {
+    grid-template-columns: repeat(4, 1fr); /* Changed to 4 columns for better distribution */
     text-align: left;
+  }
+  .footer-contact,
+  .footer-social {
+    margin-top: 0; /* Reset margin for grid layout */
   }
 }
