@@ -61,9 +61,15 @@ body {
 
 .navbar-links {
   display: flex;
+  align-items: center; /* Vertically align the LI items themselves */
   gap: 1.5rem;
   list-style: none;
   transition: all 0.3s ease;
+}
+
+.navbar-links li {
+  display: flex; /* Make li a flex container */
+  align-items: center; /* Vertically center its child (a or button) */
 }
 
 .navbar-links li a,
