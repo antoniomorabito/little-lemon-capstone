@@ -60,12 +60,14 @@ function Navbar() {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen}
+            aria-controls="navbar-links-list"
           >
             {menuOpen ? "✕" : "☰"}
           </div>
         </div>
 
-        <ul className={`navbar-links ${menuOpen ? "open" : ""}`}>
+        <ul className={`navbar-links ${menuOpen ? "open" : ""}`} id="navbar-links-list">
           <li>
             <Link to="/" onClick={closeMenu}>
               Home
