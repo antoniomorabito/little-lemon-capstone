@@ -59,7 +59,9 @@ const LemonDessertSVG = () => (
 
 function Specials() {
   return (
-    <section className="specials">
+    <section id="menu" className="specials">
+      {" "}
+      {/* Ditambahkan id="menu" */}
       <div className="container">
         <div className="specials-header-row">
           <h2>This Week's Specials</h2>
